@@ -1,0 +1,123 @@
+Git Pages Lab Report
+Sandbox Network
+________________________________________
+Configuration Overview
+To set up the project environment, you need to configure three virtual machines (VMs) using VirtualBox. Below is the list of required software and operating system (OS) files:
+Required Software and Files
+1.	VirtualBox: Download and install the VirtualBox application on your PC.
+2.	Operating System Files: 
+o	Ubuntu Desktop (.iso format) or another desktop OS (e.g., Kali Linux, Windows).
+o	Ubuntu Server (.iso format).
+o	Bitnami WordPress Application Server (.ova format).
+Setup Steps
+1.	Install VirtualBox.
+2.	Add all three OS images to VirtualBox.
+3.	Follow the specific configuration steps for each VM as outlined below.
+________________________________________
+Ubuntu Server Configuration
+Step 1: Create a New Virtual Machine (VM)
+1.	Open VirtualBox.
+2.	Click New to create a new VM.
+3.	Set the following configurations: 
+o	Name: Ubuntu Server.
+o	Type: Linux.
+o	Version: Ubuntu (64-bit).
+o	Memory (RAM): Allocate at least 2048 MB (adjust based on system capacity).
+o	Hard Disk: Create a virtual hard disk with a minimum size of 10 GB.
+4.	Click Create to finalize the VM setup.
+Step 2: Configure Network Interfaces
+1.	Open the VM Settings > Network.
+2.	Configure three adapters: 
+o	Adapter 1: Set to Internal Network (e.g., intnet) for Subnet 1.
+o	Adapter 2: Set to another Internal Network (e.g., intnet1) for Subnet 2.
+o	Adapter 3: Set to NAT for internet access.
+3.	Set the adapter types to PCnet-FAST III or a supported alternative.
+Step 3: Install Ubuntu Server
+1.	Start the VM and select the Ubuntu Server ISO as the boot disk.
+2.	Complete the installation: 
+o	Set the time zone, keyboard layout, and other preferences.
+o	Create a user account with a strong password.
+o	Install the OpenSSH Server when prompted.
+3.	Reboot the VM after the installation.
+Step 4: Configure Static IP Addresses
+1.	Log in to the Ubuntu Server VM.
+2.	Edit the network configuration file: 
+sudo nano /etc/netplan/00-installer-config.yaml
+3.	Define static IPs for the interfaces, ensuring each belongs to a different subnet.
+4.	Apply the changes: 
+sudo netplan apply
+ip a
+Step 5: Enable IP Forwarding
+1.	Open the sysctl configuration file: 
+sudo nano /etc/sysctl.conf
+2.	Uncomment or add the following line: 
+net.ipv4.ip_forward=1
+3.	Apply the changes: 
+sudo sysctl -p
+Step 6: Configure IPTables for Routing
+1.	Enable packet forwarding between subnets: 
+sudo iptables -A FORWARD -i enp0s3 -o enp0s8 -j ACCEPT
+sudo iptables -A FORWARD -i enp0s8 -o enp0s3 -j ACCEPT
+2.	Save and reload the IPTables configuration: 
+sudo apt install iptables-persistent
+sudo netfilter-persistent save
+sudo netfilter-persistent reload
+________________________________________
+Ubuntu Desktop Configuration
+Step 1: Create a Virtual Machine for Ubuntu Desktop
+1.	Open VirtualBox and click New.
+2.	Set the following configurations: 
+o	Name: Ubuntu Desktop.
+o	Memory: Allocate 2048 MB.
+o	Processor: Assign two processors.
+o	Hard Disk: Create a virtual hard disk with at least 25 GB.
+3.	Select the Ubuntu Desktop ISO and disable the "Unattended Installation" checkbox.
+4.	Boot the VM and follow the installation prompts to complete setup.
+Step 2: Configure Network Interfaces
+1.	Open the VM Settings > Network. 
+o	Set Adapter 1 to Internal Network (e.g., intnet).
+2.	In the Ubuntu Desktop environment: 
+o	Go to Settings > Network.
+o	Set a static IP configuration: 
+	Address: 192.168.15.2
+	Netmask: 255.255.255.0
+	Gateway: 192.168.15.1
+o	Apply and reconnect the network.
+________________________________________
+Bitnami WordPress Application Server Configuration
+Step 1: Import Bitnami OVA File
+1.	Open VirtualBox and click File > Import Appliance.
+2.	Select the Bitnami OVA file and complete the import process.
+3.	Start the VM and follow the on-screen instructions to reset the password.
+Step 2: Configure Network Interfaces
+1.	Open the VM Settings > Network. 
+o	Set Adapter 1 to Internal Network (e.g., intnet1).
+2.	Log in to the Bitnami VM and configure the network: 
+sudo nano /etc/network/interfaces
+3.	Update the file with static IP details: 
+auto enp0s3
+iface enp0s3 inet static
+address 192.168.115.2
+netmask 255.255.255.0
+gateway 192.168.115.1
+4.	Restart networking: 
+sudo ifdown enp0s3 && sudo ifup enp0s3
+sudo systemctl restart networking
+ip a
+________________________________________
+Checking Results:
+Go to Ubuntu desktop:
+ping 192.168.15.1
+ping 192.168.115.2
+Go to Ubuntu server:
+ping 192.168.15.2
+ping 192.168.115.2
+Go to Bitnami:
+ping 192.168.115.1
+ping 192.168.15.2
+
+You can see the result execution video from link below:
+https://www.loom.com/share/70983939fb7d41e2a7d5317f0f8afc0b?sid=2eddc357-a426-4a6b-a03c-a974f704bbb3
+
+
+
